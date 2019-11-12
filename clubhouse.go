@@ -25,6 +25,7 @@ type ClubHouseStory struct {
 	Name            string                    `json:"name"`
 	Description     string                    `json:"description"`
 	ExternalTickets []ClubHouseExternalTicket `json:"external_tickets"`
+	ExternalID      string                    `json:"external_id"`
 	IterationID     int                       `json:"iteration_id"`
 }
 
@@ -43,7 +44,7 @@ type MockClubHouse struct {
 
 func ClubHouseBuilder(token string) AbstractClubHouse {
 	if token == "MOCK_CLUBHOUSE" {
-		return  &MockClubHouse{token}
+		return &MockClubHouse{token}
 	}
 	return &ClubHouse{token}
 }
@@ -128,4 +129,5 @@ func ZendeskToClubHouse(zendeskTicket *ZendeskTicket, clubhouseTicket *ClubHouse
 		ID:  zendeskTicket.ID,
 		URL: zendeskTicket.URL,
 	})
+	clubhouseTicket.ExternalID = fmt.Sprintf("zendesk-%d", zendeskTicket.ID)
 }
