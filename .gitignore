@@ -121,3 +121,9 @@ public/
 .serverless
 
 # End of https://www.gitignore.io/api/go,node,serverless
+
+
+# Created by https://www.gitignore.io/api/intellij
+# Edit at https://www.gitignore.io/?templates=intellij
+
+.idea/

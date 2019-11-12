@@ -16,6 +16,10 @@ package:
   exclude:
     - .gitignore
     - .git/**
+    - .idea/**
+    - test/**
+    - .github
+    - .npmignore
 
 functions:
   ZendeskClubhouseAdapter:
@@ -24,3 +28,5 @@ functions:
       - http: path
     environment:
       CH_TOKEN: ${env:CH_TOKEN}
+      AUTH_USER: ${env:AUTH_USER}
+      AUTH_PASSWORD: ${env:AUTH_PASSWORD}
