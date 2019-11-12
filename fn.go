@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -13,7 +14,7 @@ type ZendeskTicket struct {
 	Title        string `json:"title"`
 	Description  string `json:"description"`
 	Organization string `json:"organization"`
-	ID           int    `json:"id"`
+	ID           string `json:"id"`
 	URL          string `json:"url"`
 }
 
@@ -28,12 +29,13 @@ func createTicket(r *http.Request) error {
 	var decoder = json.NewDecoder(r.Body)
 	err := decoder.Decode(&zendeskTicket)
 	if err != nil {
+		log.Fatalln("Zendesk ticket decode error")
 		return err
 	}
 
 	if token == "" ||
 		zendeskTicket.Title == "" ||
-		zendeskTicket.ID == 0 ||
+		zendeskTicket.ID == "" ||
 		zendeskTicket.URL == "" {
 		return os.ErrInvalid
 	}
@@ -44,6 +46,7 @@ func createTicket(r *http.Request) error {
 	// Get current Clubhouse iteration
 	err = clubhouse.CurrentIteration(&currentIteration)
 	if err != nil {
+		log.Fatalln("Fail to get current iteration")
 		return err
 	}
 	clubhouseStory.IterationID = currentIteration.ID
@@ -51,6 +54,7 @@ func createTicket(r *http.Request) error {
 	// Create Clubhouse Story
 	err = clubhouse.CreateStory(&clubhouseStory)
 	if err != nil {
+		log.Fatalln("Fail to create story")
 		return err
 	}
 
@@ -58,6 +62,7 @@ func createTicket(r *http.Request) error {
 }
 
 func verifyBasicAuth(w http.ResponseWriter, r *http.Request, user string, password string) bool {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	basicAuthPrefix := "Basic "
 	auth := r.Header.Get("Authorization")
 
@@ -103,6 +108,7 @@ func ZendeskClubhouseAdapter(w http.ResponseWriter, r *http.Request) {
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
+		log.Printf( "[Error] %s", err)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)

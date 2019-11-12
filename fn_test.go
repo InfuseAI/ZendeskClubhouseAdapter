@@ -23,10 +23,10 @@ func TestZendeskClubhouseAdapter(t *testing.T) {
 		payload        string
 		wantStatus     int
 	}{
-		"create ticket":                         {http.MethodPost, "MOCK_CLUBHOUSE", "", "", `{"title": "unit test", "id": 7777, "url": "http://unittest.io" }`, http.StatusCreated},
-		"create ticket with auth":               {http.MethodPost, "MOCK_CLUBHOUSE", "unit-test", "YouShallNotPass!", `{"title": "unit test", "id": 7777, "url": "http://unittest.io" }`, http.StatusCreated},
+		"create ticket":                         {http.MethodPost, "MOCK_CLUBHOUSE", "", "", `{"title": "unit test", "id": "7777", "url": "http://unittest.io" }`, http.StatusCreated},
+		"create ticket with auth":               {http.MethodPost, "MOCK_CLUBHOUSE", "unit-test", "YouShallNotPass!", `{"title": "unit test", "id": "7777", "url": "http://unittest.io" }`, http.StatusCreated},
 		"create ticket with invalid payload":    {http.MethodPost, "MOCK_CLUBHOUSE", "unit-test", "YouShallNotPass!", `{}`, http.StatusBadRequest},
-		"create ticket without clubhouse token": {http.MethodPost, "", "", "", `{"title": "unit test", "id": 7777, "url": "http://unittest.io" }`, http.StatusBadRequest},
+		"create ticket without clubhouse token": {http.MethodPost, "", "", "", `{"title": "unit test", "id": "7777", "url": "http://unittest.io" }`, http.StatusBadRequest},
 	}
 
 	for name, tt := range tests {

@@ -15,7 +15,7 @@ type ClubHouseIteration struct {
 }
 
 type ClubHouseExternalTicket struct {
-	ID  int    `json:"external_id"`
+	ID  string `json:"external_id"`
 	URL string `json:"external_url"`
 }
 
@@ -129,5 +129,5 @@ func ZendeskToClubHouse(zendeskTicket *ZendeskTicket, clubhouseTicket *ClubHouse
 		ID:  zendeskTicket.ID,
 		URL: zendeskTicket.URL,
 	})
-	clubhouseTicket.ExternalID = fmt.Sprintf("zendesk-%d", zendeskTicket.ID)
+	clubhouseTicket.ExternalID = fmt.Sprintf("zendesk-%s", zendeskTicket.ID)
 }

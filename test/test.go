@@ -23,13 +23,19 @@ func main() {
 		Title:        "Test",
 		Description:  "Test for zendesk",
 		Organization: "InfuseAI",
-		ID:           777,
+		ID:           "777",
 		URL:          "https://infuseai.io",
 	}
 	clubhouse := cloudfunction.ClubHouseStory{}
 
 	cloudfunction.ZendeskToClubHouse(&zendesk, &clubhouse)
 	clubhouse.IterationID = iteration.ID
+
+	//err = c.CreateStory(&clubhouse)
+	//if err != nil {
+	//	panic(err)
+	//}
+
 	jsonByte, err := json.Marshal(clubhouse)
 	log.Printf("%v\n", string(jsonByte))
 }
