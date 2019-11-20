@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -61,6 +62,39 @@ func createTicket(r *http.Request) error {
 	return nil
 }
 
+func updateTicket(r *http.Request) error {
+	var token = os.Getenv("CH_TOKEN")
+	var zendeskTicket = ZendeskTicket{}
+	var story = ClubHouseStory{}
+	var clubhouse = ClubHouseBuilder(token)
+
+	// Parse request body
+	var decoder = json.NewDecoder(r.Body)
+	err := decoder.Decode(&zendeskTicket)
+	if err != nil {
+		log.Fatalln("Zendesk ticket decode error")
+		return err
+	}
+
+	if token == "" ||
+		zendeskTicket.ID == "" {
+		return os.ErrInvalid
+	}
+
+	externalID := fmt.Sprintf("zendesk-%s", zendeskTicket.ID)
+	err = clubhouse.GetStoryByExternalID(externalID, &story)
+	if err != nil {
+		return err
+	}
+
+	err = clubhouse.AddCommentOnStory(story.ID, zendeskTicket.Description)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func verifyBasicAuth(w http.ResponseWriter, r *http.Request, user string, password string) bool {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	basicAuthPrefix := "Basic "
@@ -100,15 +134,19 @@ func ZendeskClubhouseAdapter(w http.ResponseWriter, r *http.Request) {
 
 	if method == http.MethodPost {
 		err = createTicket(r)
+	} else if method == http.MethodPut {
+		err = updateTicket(r)
 	}
 
 	if err != nil {
 		if err == os.ErrInvalid {
 			w.WriteHeader(http.StatusBadRequest)
+		} else if err == os.ErrNotExist {
+			w.WriteHeader(http.StatusNotFound)
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-		log.Printf( "[Error] %s", err)
+		log.Printf("[Error] %s", err)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
