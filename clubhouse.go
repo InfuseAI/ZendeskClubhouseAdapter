@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -21,7 +22,7 @@ type ClubHouseExternalTicket struct {
 }
 
 type ClubHouseStory struct {
-	ID              int                       `json:"id"`
+	ID              int                       `json:"id,omitempty"`
 	ProjectID       int                       `json:"project_id"`
 	StoryType       string                    `json:"story_type"`
 	Name            string                    `json:"name"`
@@ -107,6 +108,12 @@ func (c *ClubHouse) CreateStory(story *ClubHouseStory) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 201 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		bodyString := string(bodyBytes)
+		log.Println(bodyString)
 		return fmt.Errorf(resp.Status)
 	}
 	return nil
