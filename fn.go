@@ -95,6 +95,43 @@ func updateTicket(r *http.Request) error {
 	return nil
 }
 
+func closeTicket(r *http.Request) error {
+	var token = os.Getenv("CH_TOKEN")
+	var zendeskTicket = ZendeskTicket{}
+	var story = ClubHouseStory{}
+	var clubhouse = ClubHouseBuilder(token)
+
+	// Parse request body
+	var decoder = json.NewDecoder(r.Body)
+	err := decoder.Decode(&zendeskTicket)
+	if err != nil {
+		log.Fatalln("Zendesk ticket decode error")
+		return err
+	}
+
+	if token == "" ||
+		zendeskTicket.ID == "" {
+		return os.ErrInvalid
+	}
+
+	externalID := fmt.Sprintf("zendesk-%s", zendeskTicket.ID)
+	err = clubhouse.GetStoryByExternalID(externalID, &story)
+	if err != nil {
+		return err
+	}
+
+	completedStateID, err := clubhouse.GetWorkflowStateByName("Dev", "Completed")
+	if err != nil {
+		return err
+	}
+
+	if completedStateID == story.WorkflowStateID {
+		return nil
+	}
+
+	return clubhouse.CloseStory(story.ID, completedStateID)
+}
+
 func verifyBasicAuth(w http.ResponseWriter, r *http.Request, user string, password string) bool {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	basicAuthPrefix := "Basic "
@@ -136,6 +173,12 @@ func ZendeskClubhouseAdapter(w http.ResponseWriter, r *http.Request) {
 		err = createTicket(r)
 	} else if method == http.MethodPut {
 		err = updateTicket(r)
+	} else if method == http.MethodDelete {
+		err = closeTicket(r)
+	} else {
+		// Unsupported method
+		w.WriteHeader(http.StatusTeapot)
+		return
 	}
 
 	if err != nil {

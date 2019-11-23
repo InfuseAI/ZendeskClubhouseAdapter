@@ -43,5 +43,7 @@ func main() {
 	}
 
 	log.Printf("%v\n", story)
+	id, err := c.GetWorkflowStateByName("Dev","Completed")
+	log.Printf("ID: %d\n", id)
 	//err = c.AddCommentOnStory(story.ID, "Test message from ZendeskClubhouseAdapter")
 }

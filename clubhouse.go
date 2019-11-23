@@ -10,6 +10,19 @@ import (
 	"os"
 )
 
+type ClubHoseWorkflow struct {
+	EntityType string                   `json:"entity_type"`
+	States     []ClubHouseWorkflowState `json:"states"`
+	Name       string                   `json:"name"`
+	ID         int                      `json:"id"`
+}
+type ClubHouseWorkflowState struct {
+	EntityType string `json:"entity_type"`
+	Name       string `json:"name"`
+	Type       string `json:"type"`
+	ID         int    `json:"id"`
+}
+
 type ClubHouseIteration struct {
 	ID     int    `json:"id"`
 	Status string `json:"status"`
@@ -30,13 +43,16 @@ type ClubHouseStory struct {
 	ExternalTickets []ClubHouseExternalTicket `json:"external_tickets"`
 	ExternalID      string                    `json:"external_id"`
 	IterationID     int                       `json:"iteration_id"`
+	WorkflowStateID int                       `json:"workflow_state_id,omitempty"`
 }
 
 type AbstractClubHouse interface {
 	CurrentIteration(*ClubHouseIteration) error
-	CreateStory(*ClubHouseStory) error
 	GetStoryByExternalID(string, *ClubHouseStory) error
+	GetWorkflowStateByName(string, string) (int, error)
+	CreateStory(*ClubHouseStory) error
 	AddCommentOnStory(int, string) error
+	CloseStory(int, int) error
 }
 
 type ClubHouse struct {
@@ -123,7 +139,6 @@ func (c *MockClubHouse) CreateStory(story *ClubHouseStory) error {
 	return nil
 }
 
-
 func (c *ClubHouse) AddCommentOnStory(storyID int, text string) error {
 	URL := fmt.Sprintf("https://api.clubhouse.io/api/v3/stories/%d/comments?token=%s", storyID, c.Token)
 	payload := map[string]interface{}{"text": text}
@@ -145,6 +160,35 @@ func (c *ClubHouse) AddCommentOnStory(storyID int, text string) error {
 }
 
 func (c *MockClubHouse) AddCommentOnStory(storyID int, text string) error {
+	return nil
+}
+
+func (c *ClubHouse) CloseStory(storyID int, workflowID int) error {
+	URL := fmt.Sprintf("hhttps://api.clubhouse.io/api/v3/stories/%d?token=%s", storyID, c.Token)
+	payload := map[string]interface{}{"workflow_state_id": workflowID}
+	requestBytes, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, URL, bytes.NewBuffer(requestBytes))
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf(resp.Status)
+	}
+	return nil
+}
+
+func (c *MockClubHouse) CloseStory(storyID int, workflowID int) error {
 	return nil
 }
 
@@ -175,7 +219,7 @@ func (c *ClubHouse) GetStoryByExternalID(externalID string, story *ClubHouseStor
 		return err
 	}
 	if len(stories) == 0 {
-		return  os.ErrNotExist
+		return os.ErrNotExist
 	}
 
 	*story = stories[0]
@@ -203,4 +247,39 @@ func ZendeskToClubHouse(zendeskTicket *ZendeskTicket, clubhouseTicket *ClubHouse
 		URL: zendeskTicket.URL,
 	})
 	clubhouseTicket.ExternalID = fmt.Sprintf("zendesk-%s", zendeskTicket.ID)
+}
+
+func (c *ClubHouse) GetWorkflowStateByName(workflowName string, stateName string) (int, error) {
+	workflows := new([]ClubHoseWorkflow)
+	URL := fmt.Sprintf("https://api.clubhouse.io/api/v3/workflows?token=%s", c.Token)
+
+	resp, err := http.Get(URL)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return 0, fmt.Errorf(resp.Status)
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&workflows)
+	if err != nil {
+		return 0, fmt.Errorf(resp.Status)
+	}
+
+	for _, workflow := range *workflows {
+		if workflow.Name == workflowName {
+			for _, state := range workflow.States {
+				if state.Name == stateName {
+					return state.ID, nil
+				}
+			}
+		}
+	}
+
+	return 0, os.ErrNotExist
+}
+
+func (c *MockClubHouse) GetWorkflowStateByName(workflowName string, stateName string) (int, error) {
+	return 500000011, nil
 }

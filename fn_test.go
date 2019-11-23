@@ -23,6 +23,7 @@ func TestZendeskClubhouseAdapter(t *testing.T) {
 		payload        string
 		wantStatus     int
 	}{
+		"unsupported method":                       {http.MethodGet, "MOCK_CLUBHOUSE", "", "", "", http.StatusTeapot},
 		"create ticket":                            {http.MethodPost, "MOCK_CLUBHOUSE", "", "", `{"title": "unit test", "id": "7777", "url": "http://unittest.io" }`, http.StatusCreated},
 		"create ticket with auth":                  {http.MethodPost, "MOCK_CLUBHOUSE", "unit-test", "YouShallNotPass!", `{"title": "unit test", "id": "7777", "url": "http://unittest.io" }`, http.StatusCreated},
 		"create ticket with invalid payload":       {http.MethodPost, "MOCK_CLUBHOUSE", "unit-test", "YouShallNotPass!", `{}`, http.StatusBadRequest},
@@ -30,6 +31,7 @@ func TestZendeskClubhouseAdapter(t *testing.T) {
 		"update ticket":                            {http.MethodPut, "MOCK_CLUBHOUSE", "", "", `{"title": "unit test", "id": "7777", "description": "Hello world" }`, http.StatusCreated},
 		"update ticket with invalid payload":       {http.MethodPut, "MOCK_CLUBHOUSE", "unit-test", "YouShallNotPass!", `{}`, http.StatusBadRequest},
 		"update ticket with non-exist external ID": {http.MethodPut, "MOCK_CLUBHOUSE", "unit-test", "YouShallNotPass!", `{"id": "NON_EXIST_ID", "description": "Hello world" }`, http.StatusNotFound},
+		"close ticket":                             {http.MethodDelete, "MOCK_CLUBHOUSE", "unit-test", "YouShallNotPass!", `{"id": "7777"}`, http.StatusCreated},
 	}
 
 	for name, tt := range tests {
