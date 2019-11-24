@@ -72,10 +72,15 @@ func ClubHouseBuilder(token string) AbstractClubHouse {
 
 func (c *ClubHouse) CurrentIteration(currentIteration *ClubHouseIteration) error {
 	var iterations []ClubHouseIteration
+
+	if currentIteration == nil {
+		return fmt.Errorf("no iteration provided")
+	}
+
 	URL := "https://api.clubhouse.io/api/v3/iterations?token=" + c.Token
 	resp, err := http.Get(URL)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -85,7 +90,7 @@ func (c *ClubHouse) CurrentIteration(currentIteration *ClubHouseIteration) error
 
 	err = json.NewDecoder(resp.Body).Decode(&iterations)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	latestIterationID := 0
@@ -126,7 +131,7 @@ func (c *ClubHouse) CreateStory(story *ClubHouseStory) error {
 	if resp.StatusCode != 201 {
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		bodyString := string(bodyBytes)
 		log.Println(bodyString)
@@ -164,7 +169,7 @@ func (c *MockClubHouse) AddCommentOnStory(storyID int, text string) error {
 }
 
 func (c *ClubHouse) CloseStory(storyID int, workflowID int) error {
-	URL := fmt.Sprintf("hhttps://api.clubhouse.io/api/v3/stories/%d?token=%s", storyID, c.Token)
+	URL := fmt.Sprintf("https://api.clubhouse.io/api/v3/stories/%d?token=%s", storyID, c.Token)
 	payload := map[string]interface{}{"workflow_state_id": workflowID}
 	requestBytes, err := json.Marshal(payload)
 	if err != nil {
