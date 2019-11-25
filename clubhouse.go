@@ -10,6 +10,11 @@ import (
 	"os"
 )
 
+type ClubHouseProject struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
 type ClubHoseWorkflow struct {
 	EntityType string                   `json:"entity_type"`
 	States     []ClubHouseWorkflowState `json:"states"`
@@ -287,4 +292,35 @@ func (c *ClubHouse) GetWorkflowStateByName(workflowName string, stateName string
 
 func (c *MockClubHouse) GetWorkflowStateByName(workflowName string, stateName string) (int, error) {
 	return 500000011, nil
+}
+
+func (c *ClubHouse) GetProjectByName(name string) (int, error) {
+	projects := new([]ClubHouseProject)
+	URL := fmt.Sprintf("https://api.clubhouse.io/api/v3/projects?token=%s", c.Token)
+
+	resp, err := http.Get(URL)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return 0, fmt.Errorf(resp.Status)
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&projects)
+	if err != nil {
+		return 0, fmt.Errorf(resp.Status)
+	}
+
+	for  _, project := range *projects {
+		if project.Name == name {
+			return project.ID, nil
+		}
+	}
+
+	return 0, os.ErrNotExist
+}
+
+func (c *MockClubHouse) GetProjectByName(name string) (int, error)  {
+	return 55, nil
 }

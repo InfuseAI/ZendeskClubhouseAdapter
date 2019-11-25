@@ -1,4 +1,4 @@
-module github.com/kentwelcome/ZendeskClubhouseAdapter
+module cloudfunction
 
 go 1.13
 

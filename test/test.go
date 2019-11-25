@@ -1,7 +1,7 @@
 package main
 
 import (
-	".."
+	"cloudfunction"
 	"log"
 	"os"
 )
@@ -43,7 +43,9 @@ func main() {
 	}
 
 	log.Printf("%v\n", story)
-	id, err := c.GetWorkflowStateByName("Dev","Completed")
+	id, err := c.GetWorkflowStateByName("Dev", "Completed")
 	log.Printf("ID: %d\n", id)
+	id, err = c.GetProjectByName("Support")
+	log.Printf("ID: %d err: %v\n", id, err)
 	//err = c.AddCommentOnStory(story.ID, "Test message from ZendeskClubhouseAdapter")
 }
