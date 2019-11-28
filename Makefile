@@ -1,12 +1,5 @@
 .PHONY: gomodgen deploy delete test coverage
 
-AUTH_USER ?= ""
-AUTH_PASSWORD ?= ""
-CLUBHOUSE_STORY_TYPE ?= "chore"
-CLUBHOUSE_PROJECT ?= "Support"
-CLUBHOUSE_WORKFLOW ?= "Dev"
-CLUBHOUSE_COMPLETED_STATE ?= "Completed"
-
 require-%:
 	@ if [ "${${*}}" = "" ]; then \
 		echo "Environment variable $* not set"; \
