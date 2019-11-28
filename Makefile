@@ -16,7 +16,7 @@ require-%:
 gomodgen:
 	GO111MODULE=on go mod init
 
-deploy: require-CH_TOKEN require-GCP_PROJECTmak
+deploy: require-CH_TOKEN require-GCP_PROJECT
 	serverless deploy
 
 test:
