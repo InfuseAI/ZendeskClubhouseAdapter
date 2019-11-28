@@ -307,3 +307,76 @@ func TestClubHouse_GetWorkflowStateByName(t *testing.T) {
 		})
 	}
 }
+
+var projectsResponse = `[
+  {
+    "abbreviation": "foo",
+    "archived": true,
+    "color": "foo",
+    "created_at": "2016-12-31T12:30:00Z",
+    "days_to_thermometer": 123,
+    "description": "foo",
+    "entity_type": "foo",
+    "external_id": "foo",
+    "follower_ids": ["12345678-9012-3456-7890-123456789012"],
+    "id": 123,
+    "iteration_length": 123,
+    "name": "foo",
+    "show_thermometer": true,
+    "start_time": "2016-12-31T12:30:00Z",
+    "stats": {
+      "num_points": 123,
+      "num_stories": 123
+    },
+    "team_id": 123,
+    "updated_at": "2016-12-31T12:30:00Z"
+  },
+  {
+    "id": 55,
+    "name": "Support"
+  }
+]`
+func TestClubHouse_GetProjectByName(t *testing.T) {
+	type fields struct {
+		Token string
+	}
+	type args struct {
+		name string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		responseBody string
+		want    int
+		wantErr bool
+	}{
+		{
+			name:         "Get project name",
+			fields:       fields{"test"},
+			args:         args{"Support"},
+			responseBody: projectsResponse,
+			want:         55,
+			wantErr:      false,
+		},
+	}
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &ClubHouse{
+				Token: tt.fields.Token,
+			}
+			httpmock.RegisterResponder("GET", "https://api.clubhouse.io/api/v3/projects",
+				httpmock.NewStringResponder(200, tt.responseBody))
+			got, err := c.GetProjectByName(tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetProjectByName() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetProjectByName() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -19,6 +19,13 @@ type ZendeskTicket struct {
 	URL          string `json:"url"`
 }
 
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
+}
+
 func createTicket(r *http.Request) error {
 	var token = os.Getenv("CH_TOKEN")
 	var zendeskTicket = ZendeskTicket{}
@@ -42,7 +49,12 @@ func createTicket(r *http.Request) error {
 	}
 
 	// Prepare Clubhouse Story
-	ZendeskToClubHouse(&zendeskTicket, &clubhouseStory)
+	clubhouseStoryType := getEnv("CLUBHOUSE_STORY_TYPE", "chore")
+	clubhouseProjectID, err := clubhouse.GetProjectByName(getEnv("CLUBHOUSE_PROJECT", "Support"))
+	if err != nil {
+		return err
+	}
+	ZendeskToClubHouse(&zendeskTicket, &clubhouseStory, clubhouseProjectID, clubhouseStoryType)
 
 	// Get current Clubhouse iteration
 	err = clubhouse.CurrentIteration(&currentIteration)
@@ -120,7 +132,9 @@ func closeTicket(r *http.Request) error {
 		return err
 	}
 
-	completedStateID, err := clubhouse.GetWorkflowStateByName("Dev", "Completed")
+	workflow := getEnv("CLUBHOUSE_WORKFLOW", "Dev")
+	completedState := getEnv("CLUBHOUSE_COMPLETED_STATE", "Completed")
+	completedStateID, err := clubhouse.GetWorkflowStateByName(workflow, completedState)
 	if err != nil {
 		return err
 	}

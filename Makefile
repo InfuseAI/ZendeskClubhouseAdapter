@@ -1,5 +1,12 @@
 .PHONY: gomodgen deploy delete test coverage
 
+AUTH_USER ?= ""
+AUTH_PASSWORD ?= ""
+CLUBHOUSE_STORY_TYPE ?= "chore"
+CLUBHOUSE_PROJECT ?= "Support"
+CLUBHOUSE_WORKFLOW ?= "Dev"
+CLUBHOUSE_COMPLETED_STATE ?= "Completed"
+
 require-%:
 	@ if [ "${${*}}" = "" ]; then \
 		echo "Environment variable $* not set"; \
@@ -9,7 +16,7 @@ require-%:
 gomodgen:
 	GO111MODULE=on go mod init
 
-deploy: require-CH_TOKEN
+deploy: require-CH_TOKEN require-GCP_PROJECTmak
 	serverless deploy
 
 test:

@@ -55,6 +55,7 @@ type AbstractClubHouse interface {
 	CurrentIteration(*ClubHouseIteration) error
 	GetStoryByExternalID(string, *ClubHouseStory) error
 	GetWorkflowStateByName(string, string) (int, error)
+	GetProjectByName(string) (int, error)
 	CreateStory(*ClubHouseStory) error
 	AddCommentOnStory(int, string) error
 	CloseStory(int, int) error
@@ -243,15 +244,15 @@ func (c *MockClubHouse) GetStoryByExternalID(externalID string, story *ClubHouse
 	return nil
 }
 
-func ZendeskToClubHouse(zendeskTicket *ZendeskTicket, clubhouseTicket *ClubHouseStory) {
+func ZendeskToClubHouse(zendeskTicket *ZendeskTicket, clubhouseTicket *ClubHouseStory, projectID int, storyType string) {
 	if zendeskTicket == nil || clubhouseTicket == nil {
 		return
 	}
 
 	clubhouseTicket.Name = fmt.Sprintf("[%s] %s", zendeskTicket.Organization, zendeskTicket.Title)
 	clubhouseTicket.Description = zendeskTicket.Description
-	clubhouseTicket.ProjectID = 55
-	clubhouseTicket.StoryType = "bug"
+	clubhouseTicket.ProjectID = projectID
+	clubhouseTicket.StoryType = storyType
 	clubhouseTicket.ExternalTickets = append(clubhouseTicket.ExternalTickets, ClubHouseExternalTicket{
 		ID:  zendeskTicket.ID,
 		URL: zendeskTicket.URL,
@@ -312,7 +313,7 @@ func (c *ClubHouse) GetProjectByName(name string) (int, error) {
 		return 0, fmt.Errorf(resp.Status)
 	}
 
-	for  _, project := range *projects {
+	for _, project := range *projects {
 		if project.Name == name {
 			return project.ID, nil
 		}
@@ -321,6 +322,6 @@ func (c *ClubHouse) GetProjectByName(name string) (int, error) {
 	return 0, os.ErrNotExist
 }
 
-func (c *MockClubHouse) GetProjectByName(name string) (int, error)  {
+func (c *MockClubHouse) GetProjectByName(name string) (int, error) {
 	return 55, nil
 }
