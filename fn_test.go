@@ -29,6 +29,7 @@ func TestZendeskClubhouseAdapter(t *testing.T) {
 		"create ticket with invalid payload":       {http.MethodPost, "MOCK_CLUBHOUSE", "unit-test", "YouShallNotPass!", `{}`, http.StatusBadRequest},
 		"create ticket without clubhouse token":    {http.MethodPost, "", "", "", `{"title": "unit test", "id": "7777", "url": "http://unittest.io" }`, http.StatusBadRequest},
 		"update ticket":                            {http.MethodPut, "MOCK_CLUBHOUSE", "", "", `{"title": "unit test", "id": "7777", "description": "Hello world" }`, http.StatusCreated},
+		"update ticket with Pending status":        {http.MethodPut, "MOCK_CLUBHOUSE", "", "", `{"title": "unit test", "id": "7777", "description": "Hello world", "status": "Pending" }`, http.StatusCreated},
 		"update ticket with invalid payload":       {http.MethodPut, "MOCK_CLUBHOUSE", "unit-test", "YouShallNotPass!", `{}`, http.StatusBadRequest},
 		"update ticket with non-exist external ID": {http.MethodPut, "MOCK_CLUBHOUSE", "unit-test", "YouShallNotPass!", `{"id": "NON_EXIST_ID", "description": "Hello world" }`, http.StatusNotFound},
 		"close ticket":                             {http.MethodDelete, "MOCK_CLUBHOUSE", "unit-test", "YouShallNotPass!", `{"id": "7777"}`, http.StatusCreated},
