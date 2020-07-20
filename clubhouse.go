@@ -58,7 +58,7 @@ type AbstractClubHouse interface {
 	GetProjectByName(string) (int, error)
 	CreateStory(*ClubHouseStory) error
 	AddCommentOnStory(int, string) error
-	CloseStory(int, int) error
+	UpdateStoryState(int, int) error
 }
 
 type ClubHouse struct {
@@ -174,7 +174,7 @@ func (c *MockClubHouse) AddCommentOnStory(storyID int, text string) error {
 	return nil
 }
 
-func (c *ClubHouse) CloseStory(storyID int, workflowID int) error {
+func (c *ClubHouse) UpdateStoryState(storyID int, workflowID int) error {
 	URL := fmt.Sprintf("https://api.clubhouse.io/api/v3/stories/%d?token=%s", storyID, c.Token)
 	payload := map[string]interface{}{"workflow_state_id": workflowID}
 	requestBytes, err := json.Marshal(payload)
@@ -199,7 +199,7 @@ func (c *ClubHouse) CloseStory(storyID int, workflowID int) error {
 	return nil
 }
 
-func (c *MockClubHouse) CloseStory(storyID int, workflowID int) error {
+func (c *MockClubHouse) UpdateStoryState(storyID int, workflowID int) error {
 	return nil
 }
 

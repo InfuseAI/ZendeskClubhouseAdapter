@@ -197,7 +197,7 @@ func TestClubHouse_AddCommentOnStory(t *testing.T) {
 	}
 }
 
-func TestClubHouse_CloseStory(t *testing.T) {
+func TestClubHouse_UpdateStoryState(t *testing.T) {
 	type fields struct {
 		Token string
 	}
@@ -227,8 +227,8 @@ func TestClubHouse_CloseStory(t *testing.T) {
 			}
 			httpmock.RegisterResponder("PUT", `=~^https://api\.clubhouse\.io/api/v3/stories/.*`,
 				httpmock.NewStringResponder(200, `{}`))
-			if err := c.CloseStory(tt.args.storyID, tt.args.workflowID); (err != nil) != tt.wantErr {
-				t.Errorf("CloseStory() error = %v, wantErr %v", err, tt.wantErr)
+			if err := c.UpdateStoryState(tt.args.storyID, tt.args.workflowID); (err != nil) != tt.wantErr {
+				t.Errorf("UpdateStoryState() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

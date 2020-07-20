@@ -17,6 +17,7 @@ type ZendeskTicket struct {
 	Organization string `json:"organization"`
 	ID           string `json:"id"`
 	URL          string `json:"url"`
+	Status 	     string `json:"status"`
 }
 
 func getEnv(key, fallback string) string {
@@ -104,6 +105,22 @@ func updateTicket(r *http.Request) error {
 		return err
 	}
 
+	if zendeskTicket.Status == "Pending" {
+		workflow := getEnv("CLUBHOUSE_WORKFLOW", "Dev")
+		pendingState := getEnv("CLUBHOUSE_PENDING_STATE", "Blocks" )
+		pendingStateID, err := clubhouse.GetWorkflowStateByName(workflow, pendingState)
+		if err != nil {
+			return err
+		}
+
+		if pendingStateID != story.WorkflowStateID {
+			err = clubhouse.UpdateStoryState(story.ID, pendingStateID)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -143,7 +160,7 @@ func closeTicket(r *http.Request) error {
 		return nil
 	}
 
-	return clubhouse.CloseStory(story.ID, completedStateID)
+	return clubhouse.UpdateStoryState(story.ID, completedStateID)
 }
 
 func verifyBasicAuth(w http.ResponseWriter, r *http.Request, user string, password string) bool {
