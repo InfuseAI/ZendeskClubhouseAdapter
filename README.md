@@ -1,14 +1,20 @@
 # Zendesk Cloubhouse Adpter
 --
 ## Prepare
-- Install serverless framework
+- Install Google Cloud SDK
 ```bash
-npm install -g serverless 
+curl https://sdk.cloud.google.com | bash
+
+exec -l $SHELL
+
+gcloud init
+ 
 ```
 
 ## How to deploy
 ```bash
-make deploy GCP_PROJECT=<your-gcp-project-name> [AUTH_USER=<http-auth-username>] [AUTH_PASSWORD=<http-auth-password>]
+make deploy GCP_PROJECT=<your-gcp-project-name> CH_TOKEN=<your-clubhouse-token> \
+            [AUTH_USER=<http-auth-username>] [AUTH_PASSWORD=<http-auth-password>]
 ```
 
 ## How to run test
