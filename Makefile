@@ -1,5 +1,12 @@
 .PHONY: gomodgen deploy delete test coverage
 
+FUNCTION_NAME ?= ZendeskClubhouseAdapter
+CLUBHOUSE_STORY_TYPE ?= chore
+CLUBHOUSE_PROJECT ?= Support
+CLUBHOUSE_WORKFLOW ?= Dev
+CLUBHOUSE_PENDING_STATE ?= Blocks
+CLUBHOUSE_COMPLETED_STATE ?= Completed
+
 require-%:
 	@ if [ "${${*}}" = "" ]; then \
 		echo "Environment variable $* not set"; \
@@ -10,7 +17,9 @@ gomodgen:
 	GO111MODULE=on go mod init
 
 deploy: require-CH_TOKEN require-GCP_PROJECT
-	serverless deploy
+	gcloud config set project $(GCP_PROJECT)
+	gcloud functions deploy $(FUNCTION_NAME) --allow-unauthenticated --runtime=go111 --entry-point ZendeskClubhouseAdapter --trigger-http \
+	--set-env-vars CH_TOKEN="$(CH_TOKEN)",AUTH_USER="$(AUTH_USER)",AUTH_PASSWORD="$(AUTH_PASSWORD)",CLUBHOUSE_STORY_TYPE="$(CLUBHOUSE_STORY_TYPE)",CLUBHOUSE_PROJECT="$(CLUBHOUSE_PROJECT)",CLUBHOUSE_WORKFLOW="$(CLUBHOUSE_WORKFLOW)",CLUBHOUSE_PENDING_STATE="$(CLUBHOUSE_PENDING_STATE)",CLUBHOUSE_COMPLETED_STATE="$(CLUBHOUSE_COMPLETED_STATE)"
 
 test:
 	go test
@@ -20,4 +29,4 @@ coverage:
 	go tool cover -html=coverage.out
 
 delete:
-	serverless remove
+	gcloud functions delete $(FUNCTION_NAME)
