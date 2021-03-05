@@ -3,9 +3,9 @@
 FUNCTION_NAME ?= ZendeskClubhouseAdapter
 CLUBHOUSE_STORY_TYPE ?= chore
 CLUBHOUSE_PROJECT ?= Support
-CLUBHOUSE_WORKFLOW ?= Dev
-CLUBHOUSE_PENDING_STATE ?= Blocks
-CLUBHOUSE_COMPLETED_STATE ?= Completed
+CLUBHOUSE_WORKFLOW ?= Support
+CLUBHOUSE_PENDING_STATE ?= Suspend
+CLUBHOUSE_COMPLETED_STATE ?= Resolved
 
 require-%:
 	@ if [ "${${*}}" = "" ]; then \
