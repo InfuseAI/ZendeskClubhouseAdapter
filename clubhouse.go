@@ -34,18 +34,13 @@ type ClubHouseIteration struct {
 	Name   string `json:"name"`
 }
 
-type ClubHouseExternalTicket struct {
-	ID  string `json:"external_id"`
-	URL string `json:"external_url"`
-}
-
 type ClubHouseStory struct {
 	ID              int                       `json:"id,omitempty"`
 	ProjectID       int                       `json:"project_id"`
 	StoryType       string                    `json:"story_type"`
 	Name            string                    `json:"name"`
 	Description     string                    `json:"description"`
-	ExternalTickets []ClubHouseExternalTicket `json:"external_tickets"`
+	ExternalLinks   []string                  `json:"external_links"`
 	ExternalID      string                    `json:"external_id"`
 	IterationID     int                       `json:"iteration_id"`
 	WorkflowStateID int                       `json:"workflow_state_id,omitempty"`
@@ -253,10 +248,7 @@ func ZendeskToClubHouse(zendeskTicket *ZendeskTicket, clubhouseTicket *ClubHouse
 	clubhouseTicket.Description = zendeskTicket.Description
 	clubhouseTicket.ProjectID = projectID
 	clubhouseTicket.StoryType = storyType
-	clubhouseTicket.ExternalTickets = append(clubhouseTicket.ExternalTickets, ClubHouseExternalTicket{
-		ID:  zendeskTicket.ID,
-		URL: zendeskTicket.URL,
-	})
+	clubhouseTicket.ExternalLinks = append(clubhouseTicket.ExternalLinks, zendeskTicket.URL)
 	clubhouseTicket.ExternalID = fmt.Sprintf("zendesk-%s", zendeskTicket.ID)
 }
 
