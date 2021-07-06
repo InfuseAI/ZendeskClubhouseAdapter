@@ -15,6 +15,12 @@ type ClubHouseProject struct {
 	Name string `json:"name"`
 }
 
+type ClubHouseGroup struct {
+	ID          string `json:"id"`
+	MentionName string `json:"mention_name"`
+	Name        string `json:"name"`
+}
+
 type ClubHoseWorkflow struct {
 	EntityType string                   `json:"entity_type"`
 	States     []ClubHouseWorkflowState `json:"states"`
@@ -35,15 +41,16 @@ type ClubHouseIteration struct {
 }
 
 type ClubHouseStory struct {
-	ID              int                       `json:"id,omitempty"`
-	ProjectID       int                       `json:"project_id"`
-	StoryType       string                    `json:"story_type"`
-	Name            string                    `json:"name"`
-	Description     string                    `json:"description"`
-	ExternalLinks   []string                  `json:"external_links"`
-	ExternalID      string                    `json:"external_id"`
-	IterationID     int                       `json:"iteration_id"`
-	WorkflowStateID int                       `json:"workflow_state_id,omitempty"`
+	ID              int      `json:"id,omitempty"`
+	ProjectID       int      `json:"project_id"`
+	StoryType       string   `json:"story_type"`
+	Name            string   `json:"name"`
+	Description     string   `json:"description"`
+	ExternalLinks   []string `json:"external_links"`
+	ExternalID      string   `json:"external_id"`
+	IterationID     int      `json:"iteration_id"`
+	WorkflowStateID int      `json:"workflow_state_id,omitempty"`
+	GroupID         string   `json:"group_id"`
 }
 
 type AbstractClubHouse interface {
@@ -51,6 +58,7 @@ type AbstractClubHouse interface {
 	GetStoryByExternalID(string, *ClubHouseStory) error
 	GetWorkflowStateByName(string, string) (int, error)
 	GetProjectByName(string) (int, error)
+	GetTeamByName(string) (string, error)
 	CreateStory(*ClubHouseStory) error
 	AddCommentOnStory(int, string) error
 	UpdateStoryState(int, int) error
@@ -239,7 +247,7 @@ func (c *MockClubHouse) GetStoryByExternalID(externalID string, story *ClubHouse
 	return nil
 }
 
-func ZendeskToClubHouse(zendeskTicket *ZendeskTicket, clubhouseTicket *ClubHouseStory, projectID int, storyType string) {
+func ZendeskToClubHouse(zendeskTicket *ZendeskTicket, clubhouseTicket *ClubHouseStory, projectID int, teamID string, storyType string) {
 	if zendeskTicket == nil || clubhouseTicket == nil {
 		return
 	}
@@ -250,6 +258,7 @@ func ZendeskToClubHouse(zendeskTicket *ZendeskTicket, clubhouseTicket *ClubHouse
 	clubhouseTicket.StoryType = storyType
 	clubhouseTicket.ExternalLinks = append(clubhouseTicket.ExternalLinks, zendeskTicket.URL)
 	clubhouseTicket.ExternalID = fmt.Sprintf("zendesk-%s", zendeskTicket.ID)
+	clubhouseTicket.GroupID = teamID
 }
 
 func (c *ClubHouse) GetWorkflowStateByName(workflowName string, stateName string) (int, error) {
@@ -316,4 +325,36 @@ func (c *ClubHouse) GetProjectByName(name string) (int, error) {
 
 func (c *MockClubHouse) GetProjectByName(name string) (int, error) {
 	return 55, nil
+}
+
+func (c *ClubHouse) GetTeamByName(name string) (string, error) {
+	teams := new([]ClubHouseGroup)
+	URL := fmt.Sprintf("https://api.clubhouse.io/api/v3/groups?token=%s", c.Token)
+
+	resp, err := http.Get(URL)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf(resp.Status)
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&teams)
+	if err != nil {
+		return "", fmt.Errorf(resp.Status)
+	}
+
+	for _, team := range *teams {
+		if team.Name == name || team.MentionName == name {
+			return team.ID, nil
+		}
+	}
+
+	// Team ID is an option of Clubhouse Story
+	return "", nil
+}
+
+func (c *MockClubHouse) GetTeamByName(name string) (string, error) {
+	return "team-id", nil
 }
