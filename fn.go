@@ -53,10 +53,15 @@ func createTicket(r *http.Request) error {
 	clubhouseStoryType := getEnv("CLUBHOUSE_STORY_TYPE", "chore")
 	clubhouseProjectID, err := clubhouse.GetProjectByName(getEnv("CLUBHOUSE_PROJECT", "Support"))
 	clubhouseTeamID, err := clubhouse.GetTeamByName(getEnv("CLUBHOUSE_TEAM", "Support"))
+
+	clubhouseWorkflow := getEnv("CLUBHOUSE_WORKFLOW", "Support")
+	clubhouseCreatedState := getEnv("CLUBHOUSE_CREATED_STATE", "Created" )
+	clubhouseCreatedStateID, err := clubhouse.GetWorkflowStateByName(clubhouseWorkflow, clubhouseCreatedState)
+
 	if err != nil {
 		return err
 	}
-	ZendeskToClubHouse(&zendeskTicket, &clubhouseStory, clubhouseProjectID, clubhouseTeamID, clubhouseStoryType)
+	ZendeskToClubHouse(&zendeskTicket, &clubhouseStory, clubhouseProjectID, clubhouseTeamID, clubhouseStoryType, clubhouseCreatedStateID)
 
 	// Get current Clubhouse iteration
 	err = clubhouse.CurrentIteration(&currentIteration)

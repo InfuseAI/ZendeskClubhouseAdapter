@@ -52,7 +52,7 @@ func TestClubHouse_CurrentIteration(t *testing.T) {
 			c := &ClubHouse{
 				Token: tt.fields.Token,
 			}
-			httpmock.RegisterResponder("GET", "https://api.clubhouse.io/api/v3/iterations",
+			httpmock.RegisterResponder("GET", ClubHouseAPIURL + "/api/v3/iterations",
 				httpmock.NewStringResponder(200, tt.responseBody))
 			if err := c.CurrentIteration(tt.args.currentIteration); (err != nil) != tt.wantErr {
 				t.Errorf("CurrentIteration() error = %v, wantErr %v", err, tt.wantErr)
@@ -98,7 +98,7 @@ func TestClubHouse_CreateStory(t *testing.T) {
 			c := &ClubHouse{
 				Token: tt.fields.Token,
 			}
-			httpmock.RegisterResponder("POST", "https://api.clubhouse.io/api/v3/stories",
+			httpmock.RegisterResponder("POST", ClubHouseAPIURL + "/api/v3/stories",
 				httpmock.NewStringResponder(201, "{}"))
 			if err := c.CreateStory(tt.args.story); (err != nil) != tt.wantErr {
 				t.Errorf("CreateStory() error = %v, wantErr %v", err, tt.wantErr)
@@ -147,7 +147,7 @@ func TestClubHouse_GetStoryByExternalID(t *testing.T) {
 			c := &ClubHouse{
 				Token: tt.fields.Token,
 			}
-			httpmock.RegisterResponder("POST", "https://api.clubhouse.io/api/v3/stories/search",
+			httpmock.RegisterResponder("POST", ClubHouseAPIURL + "/api/v3/stories/search",
 				httpmock.NewStringResponder(201, tt.responseBody))
 			if err := c.GetStoryByExternalID(tt.args.externalID, tt.args.story); (err != nil) != tt.wantErr {
 				t.Errorf("GetStoryByExternalID() error = %v, wantErr %v", err, tt.wantErr)
@@ -294,7 +294,7 @@ func TestClubHouse_GetWorkflowStateByName(t *testing.T) {
 			c := &ClubHouse{
 				Token: tt.fields.Token,
 			}
-			httpmock.RegisterResponder("GET", "https://api.clubhouse.io/api/v3/workflows",
+			httpmock.RegisterResponder("GET", ClubHouseAPIURL + "/api/v3/workflows",
 				httpmock.NewStringResponder(200, tt.responseBody))
 			got, err := c.GetWorkflowStateByName(tt.args.workflowName, tt.args.stateName)
 			if (err != nil) != tt.wantErr {
@@ -367,7 +367,7 @@ func TestClubHouse_GetProjectByName(t *testing.T) {
 			c := &ClubHouse{
 				Token: tt.fields.Token,
 			}
-			httpmock.RegisterResponder("GET", "https://api.clubhouse.io/api/v3/projects",
+			httpmock.RegisterResponder("GET", ClubHouseAPIURL + "/api/v3/projects",
 				httpmock.NewStringResponder(200, tt.responseBody))
 			got, err := c.GetProjectByName(tt.args.name)
 			if (err != nil) != tt.wantErr {

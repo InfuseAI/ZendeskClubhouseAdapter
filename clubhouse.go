@@ -10,6 +10,8 @@ import (
 	"os"
 )
 
+const ClubHouseAPIURL string = "https://api.app.shortcut.com"
+
 type ClubHouseProject struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
@@ -86,7 +88,7 @@ func (c *ClubHouse) CurrentIteration(currentIteration *ClubHouseIteration) error
 		return fmt.Errorf("no iteration provided")
 	}
 
-	URL := "https://api.clubhouse.io/api/v3/iterations?token=" + c.Token
+	URL := ClubHouseAPIURL + "/api/v3/iterations?token=" + c.Token
 	resp, err := http.Get(URL)
 	if err != nil {
 		return err
@@ -126,7 +128,7 @@ func (c *ClubHouse) CreateStory(story *ClubHouseStory) error {
 	if story == nil {
 		return fmt.Errorf("no story provided")
 	}
-	URL := fmt.Sprintf("https://api.clubhouse.io/api/v3/stories?token=%s", c.Token)
+	URL := fmt.Sprintf("%s/api/v3/stories?token=%s", ClubHouseAPIURL, c.Token)
 	requestBytes, err := json.Marshal(*story)
 	if err != nil {
 		return err
@@ -154,7 +156,7 @@ func (c *MockClubHouse) CreateStory(story *ClubHouseStory) error {
 }
 
 func (c *ClubHouse) AddCommentOnStory(storyID int, text string) error {
-	URL := fmt.Sprintf("https://api.clubhouse.io/api/v3/stories/%d/comments?token=%s", storyID, c.Token)
+	URL := fmt.Sprintf("%s/api/v3/stories/%d/comments?token=%s", ClubHouseAPIURL, storyID, c.Token)
 	payload := map[string]interface{}{"text": text}
 	requestBytes, err := json.Marshal(payload)
 	if err != nil {
@@ -178,7 +180,7 @@ func (c *MockClubHouse) AddCommentOnStory(storyID int, text string) error {
 }
 
 func (c *ClubHouse) UpdateStoryState(storyID int, workflowID int) error {
-	URL := fmt.Sprintf("https://api.clubhouse.io/api/v3/stories/%d?token=%s", storyID, c.Token)
+	URL := fmt.Sprintf("%s/api/v3/stories/%d?token=%s", ClubHouseAPIURL, storyID, c.Token)
 	payload := map[string]interface{}{"workflow_state_id": workflowID}
 	requestBytes, err := json.Marshal(payload)
 	if err != nil {
@@ -211,7 +213,7 @@ func (c *ClubHouse) GetStoryByExternalID(externalID string, story *ClubHouseStor
 		return fmt.Errorf("no story provided")
 	}
 
-	URL := fmt.Sprintf("https://api.clubhouse.io/api/v3/stories/search?token=%s", c.Token)
+	URL := fmt.Sprintf("%s/api/v3/stories/search?token=%s", ClubHouseAPIURL, c.Token)
 	payload := map[string]interface{}{"external_id": externalID}
 	requestBytes, err := json.Marshal(payload)
 	if err != nil {
@@ -247,7 +249,7 @@ func (c *MockClubHouse) GetStoryByExternalID(externalID string, story *ClubHouse
 	return nil
 }
 
-func ZendeskToClubHouse(zendeskTicket *ZendeskTicket, clubhouseTicket *ClubHouseStory, projectID int, teamID string, storyType string) {
+func ZendeskToClubHouse(zendeskTicket *ZendeskTicket, clubhouseTicket *ClubHouseStory, projectID int, teamID string, storyType string, workflowStateID int) {
 	if zendeskTicket == nil || clubhouseTicket == nil {
 		return
 	}
@@ -259,11 +261,12 @@ func ZendeskToClubHouse(zendeskTicket *ZendeskTicket, clubhouseTicket *ClubHouse
 	clubhouseTicket.ExternalLinks = append(clubhouseTicket.ExternalLinks, zendeskTicket.URL)
 	clubhouseTicket.ExternalID = fmt.Sprintf("zendesk-%s", zendeskTicket.ID)
 	clubhouseTicket.GroupID = teamID
+	clubhouseTicket.WorkflowStateID = workflowStateID
 }
 
 func (c *ClubHouse) GetWorkflowStateByName(workflowName string, stateName string) (int, error) {
 	workflows := new([]ClubHoseWorkflow)
-	URL := fmt.Sprintf("https://api.clubhouse.io/api/v3/workflows?token=%s", c.Token)
+	URL := fmt.Sprintf("%s/api/v3/workflows?token=%s", ClubHouseAPIURL, c.Token)
 
 	resp, err := http.Get(URL)
 	if err != nil {
@@ -298,7 +301,7 @@ func (c *MockClubHouse) GetWorkflowStateByName(workflowName string, stateName st
 
 func (c *ClubHouse) GetProjectByName(name string) (int, error) {
 	projects := new([]ClubHouseProject)
-	URL := fmt.Sprintf("https://api.clubhouse.io/api/v3/projects?token=%s", c.Token)
+	URL := fmt.Sprintf("%s/api/v3/projects?token=%s", ClubHouseAPIURL, c.Token)
 
 	resp, err := http.Get(URL)
 	if err != nil {
@@ -329,7 +332,7 @@ func (c *MockClubHouse) GetProjectByName(name string) (int, error) {
 
 func (c *ClubHouse) GetTeamByName(name string) (string, error) {
 	teams := new([]ClubHouseGroup)
-	URL := fmt.Sprintf("https://api.clubhouse.io/api/v3/groups?token=%s", c.Token)
+	URL := fmt.Sprintf("%s/api/v3/groups?token=%s", ClubHouseAPIURL, c.Token)
 
 	resp, err := http.Get(URL)
 	if err != nil {
